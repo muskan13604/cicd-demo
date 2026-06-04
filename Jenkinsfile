@@ -28,9 +28,20 @@ pipeline {
         }
 
         stage('Docker Push') {
-            steps {
-                bat 'docker push muskanyadav1/cicd-demo:v1'
-            }
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub',
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_PASS'
+            )
+        ]) {
+            bat '''
+            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+            docker push muskanyadav1/cicd-demo:v1
+            '''
         }
+    }
+}
     }
 }
