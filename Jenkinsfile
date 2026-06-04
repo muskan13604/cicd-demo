@@ -43,5 +43,13 @@ pipeline {
         }
     }
 }
+        stage('Deploy') {
+    steps {
+        bat 'docker pull muskanyadav1/cicd-demo:v1'
+        bat 'docker stop cicd-container || exit 0'
+        bat 'docker rm cicd-container || exit 0'
+        bat 'docker run -d -p 8084:8084 --name cicd-container muskanyadav1/cicd-demo:v1'
+    }
+}
     }
 }
