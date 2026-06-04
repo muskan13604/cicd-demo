@@ -1,11 +1,24 @@
 pipeline {
+
     agent any
+
+    tools {
+        maven 'Maven3'
+        jdk 'JDK21'
+    }
 
     stages {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/muskan13604/cicd-demo.git'
+                git branch: 'master',
+                    url: 'https://github.com/muskan13604/cicd-demo.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat 'mvn clean compile'
             }
         }
 
@@ -17,7 +30,7 @@ pipeline {
 
         stage('Package') {
             steps {
-                bat 'mvn clean package'
+                bat 'mvn package -DskipTests'
             }
         }
 
@@ -28,27 +41,22 @@ pipeline {
         }
 
         stage('Docker Push') {
-    steps {
-        withCredentials([
-            usernamePassword(
-                credentialsId: 'dockerhub',
-                usernameVariable: 'DOCKER_USER',
-                passwordVariable: 'DOCKER_PASS'
-            )
-        ]) {
-            bat '''
-            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-            docker push muskanyadav1/cicd-demo:v1
-            '''
+            steps {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+
+                    bat '''
+                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                    docker push muskanyadav1/cicd-demo:v1
+                    '''
+                }
+            }
         }
-    }
-}
-        stage('Deploy') {
-    steps {
-       
-        bat 'docker rm cicd-container || exit 0'
-        bat 'docker run -d -p 8084:8084 --name cicd-container muskanyadav1/cicd-demo:v1'
-    }
-}
     }
 }
